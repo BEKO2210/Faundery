@@ -40,3 +40,4 @@ Button „Beispiel-LV laden" unter `/kalkulation`.
 | 3 — Pitch | [docs/schritt-3-pitch.md](docs/schritt-3-pitch.md) |
 | 4 — Erste 100 Kunden | [docs/schritt-4-erste-100-kunden.md](docs/schritt-4-erste-100-kunden.md) |
 | 5 — Team | [docs/schritt-5-team.md](docs/schritt-5-team.md) |
+| 6 — Entscheidungen | [docs/schritt-6-entscheidungen.md](docs/schritt-6-entscheidungen.md) |
