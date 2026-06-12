@@ -41,3 +41,4 @@ Button „Beispiel-LV laden" unter `/kalkulation`.
 | 4 — Erste 100 Kunden | [docs/schritt-4-erste-100-kunden.md](docs/schritt-4-erste-100-kunden.md) |
 | 5 — Team | [docs/schritt-5-team.md](docs/schritt-5-team.md) |
 | 6 — Entscheidungen | [docs/schritt-6-entscheidungen.md](docs/schritt-6-entscheidungen.md) |
+| 7 — Skalierung | [docs/schritt-7-skalierung.md](docs/schritt-7-skalierung.md) |
