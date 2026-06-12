@@ -3,6 +3,15 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { KalkulationsErgebnis, KalkuliertePosition, Konfidenz } from "@/lib/types";
+import { erzeugeX84, type UstModus } from "@/lib/gaeb-export";
+
+const SPEICHER_KEY = "zuschlag.kalkulation.v1";
+
+interface GespeicherteKalkulation {
+  ergebnis: KalkulationsErgebnis;
+  ustModus: UstModus;
+  gespeichertAm: string;
+}
 
 const EUR = new Intl.NumberFormat("de-DE", {
   style: "currency",
@@ -35,8 +44,35 @@ function Kalkulation() {
   const [filter, setFilter] = useState<Filter>("alle");
   const [suche, setSuche] = useState("");
   const [geaendert, setGeaendert] = useState<Set<string>>(new Set());
+  const [ustModus, setUstModus] = useState<UstModus>("regel");
+  const [wiederherstellbar, setWiederherstellbar] = useState<GespeicherteKalkulation | null>(null);
   const dateiInput = useRef<HTMLInputElement>(null);
   const demoGestartet = useRef(false);
+
+  useEffect(() => {
+    try {
+      const roh = localStorage.getItem(SPEICHER_KEY);
+      if (roh) setWiederherstellbar(JSON.parse(roh) as GespeicherteKalkulation);
+    } catch {
+      /* defekter Speicherstand wird ignoriert */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ergebnis) return;
+    try {
+      localStorage.setItem(
+        SPEICHER_KEY,
+        JSON.stringify({
+          ergebnis,
+          ustModus,
+          gespeichertAm: new Date().toISOString(),
+        } satisfies GespeicherteKalkulation)
+      );
+    } catch {
+      /* Speicher voll/blockiert — Autosave ist Komfort, kein Muss */
+    }
+  }, [ergebnis, ustModus]);
 
   const kalkuliere = useCallback(async (formData: FormData) => {
     setLaedt(true);
@@ -72,9 +108,30 @@ function Kalkulation() {
 
   const verarbeiteDatei = (datei: File | undefined) => {
     if (!datei) return;
+    if (datei.name.toLowerCase().endsWith(".json")) {
+      void datei.text().then((text) => {
+        try {
+          const stand = JSON.parse(text) as GespeicherteKalkulation;
+          if (!stand.ergebnis?.positionen) throw new Error();
+          setErgebnis(stand.ergebnis);
+          setUstModus(stand.ustModus ?? "regel");
+          setFehler(null);
+        } catch {
+          setFehler("Die Datei ist keine gespeicherte Zuschlag-Kalkulation.");
+        }
+      });
+      return;
+    }
     const fd = new FormData();
     fd.set("datei", datei);
     void kalkuliere(fd);
+  };
+
+  const stelleWiederHer = () => {
+    if (!wiederherstellbar) return;
+    setErgebnis(wiederherstellbar.ergebnis);
+    setUstModus(wiederherstellbar.ustModus ?? "regel");
+    setWiederherstellbar(null);
   };
 
   const setzePreis = (oz: string, wert: string) => {
@@ -92,7 +149,7 @@ function Kalkulation() {
   const netto = ergebnis
     ? ergebnis.positionen.reduce((s, p) => s + p.menge * p.einheitspreis, 0)
     : 0;
-  const ust = netto * 0.19;
+  const ust = ustModus === "13b" ? 0 : netto * 0.19;
 
   const statistik = useMemo(() => {
     if (!ergebnis) return null;
@@ -120,6 +177,29 @@ function Kalkulation() {
         GAEB-XML (.x81–.x84), GAEB 90 (.d81–.d86) oder CSV
         (oz;menge;einheit;text) hochladen.
       </p>
+
+      {!ergebnis && !laedt && wiederherstellbar && (
+        <div className="restore-banner">
+          <span>
+            Letzte Kalkulation: <strong>{wiederherstellbar.ergebnis.projekt}</strong>{" "}
+            vom {new Date(wiederherstellbar.gespeichertAm).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })} Uhr
+          </span>
+          <span className="restore-actions">
+            <button className="btn btn-primary btn-klein" onClick={stelleWiederHer}>
+              Wiederherstellen
+            </button>
+            <button
+              className="btn btn-ghost btn-klein"
+              onClick={() => {
+                localStorage.removeItem(SPEICHER_KEY);
+                setWiederherstellbar(null);
+              }}
+            >
+              Verwerfen
+            </button>
+          </span>
+        </div>
+      )}
 
       {!ergebnis && !laedt && (
         <div
@@ -149,7 +229,7 @@ function Kalkulation() {
           <input
             ref={dateiInput}
             type="file"
-            accept=".x81,.x82,.x83,.x84,.x85,.x86,.d81,.d82,.d83,.d84,.d85,.d86,.csv,.xml"
+            accept=".x81,.x82,.x83,.x84,.x85,.x86,.d81,.d82,.d83,.d84,.d85,.d86,.csv,.xml,.json"
             style={{ display: "none" }}
             onChange={(e) => verarbeiteDatei(e.target.files?.[0])}
           />
@@ -173,6 +253,9 @@ function Kalkulation() {
           <div className="druckkopf">
             <h2>Angebot — {ergebnis.projekt}</h2>
             <p>Kalkulation vom {new Date().toLocaleDateString("de-DE")} · erstellt mit Zuschlag</p>
+            {ustModus === "13b" && (
+              <p>Steuerschuldnerschaft des Leistungsempfängers gemäß § 13b UStG — Angebotssumme ohne Umsatzsteuer.</p>
+            )}
           </div>
 
           {ergebnis.hinweise.map((h, i) => (
@@ -270,9 +353,24 @@ function Kalkulation() {
               <span>{EUR.format(netto)}</span>
             </div>
             <div className="zeile">
-              <span>zzgl. 19 % USt.</span>
+              <span className="ust-wahl">
+                <select
+                  value={ustModus}
+                  onChange={(e) => setUstModus(e.target.value as UstModus)}
+                  aria-label="Umsatzsteuer-Modus"
+                >
+                  <option value="regel">zzgl. 19 % USt.</option>
+                  <option value="13b">§ 13b UStG (Reverse Charge)</option>
+                </select>
+              </span>
               <span>{EUR.format(ust)}</span>
             </div>
+            {ustModus === "13b" && (
+              <div className="zeile ust-hinweis">
+                <span>Steuerschuldnerschaft des Leistungsempfängers — üblich bei Bauleistungen an Generalunternehmer.</span>
+                <span />
+              </div>
+            )}
             <div className="zeile total">
               <span>Angebotssumme brutto</span>
               <span>{EUR.format(netto + ust)}</span>
@@ -280,13 +378,23 @@ function Kalkulation() {
           </div>
 
           <div className="export-row">
-            <button className="btn btn-primary" onClick={() => exportiereCsv(ergebnis)}>
+            <button className="btn btn-primary" onClick={() => exportiereX84(ergebnis, ustModus)}>
+              GAEB X84 exportieren (Beta)
+            </button>
+            <button className="btn btn-ghost" onClick={() => exportiereCsv(ergebnis)}>
               CSV exportieren
             </button>
             <button className="btn btn-ghost" onClick={() => window.print()}>
               Angebot drucken / PDF
             </button>
+            <button className="btn btn-ghost" onClick={() => sichereKalkulation(ergebnis, ustModus)}>
+              Kalkulation sichern (Datei)
+            </button>
           </div>
+          <p className="export-hinweis">
+            Die X84-Datei ist das bepreiste Angebots-LV für das Vergabeportal.
+            Gesicherte Kalkulationen (.json) lassen sich oben wie ein LV wieder laden.
+          </p>
         </>
       )}
     </main>
@@ -327,6 +435,37 @@ function Zeile({
   );
 }
 
+function ladeHerunter(inhalt: BlobPart, mime: string, dateiname: string) {
+  const blob = new Blob([inhalt], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = dateiname;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportiereX84(ergebnis: KalkulationsErgebnis, ustModus: UstModus) {
+  ladeHerunter(
+    erzeugeX84(ergebnis, ustModus),
+    "application/xml;charset=utf-8",
+    "zuschlag-angebot.x84"
+  );
+}
+
+function sichereKalkulation(ergebnis: KalkulationsErgebnis, ustModus: UstModus) {
+  const stand: GespeicherteKalkulation = {
+    ergebnis,
+    ustModus,
+    gespeichertAm: new Date().toISOString(),
+  };
+  ladeHerunter(
+    JSON.stringify(stand, null, 2),
+    "application/json;charset=utf-8",
+    "zuschlag-kalkulation.json"
+  );
+}
+
 function exportiereCsv(ergebnis: KalkulationsErgebnis) {
   const kopf = "OZ;Leistung;Menge;Einheit;EP netto;GP netto;Konfidenz";
   const zeilen = ergebnis.positionen.map((p) =>
@@ -340,13 +479,9 @@ function exportiereCsv(ergebnis: KalkulationsErgebnis) {
       p.konfidenz,
     ].join(";")
   );
-  const blob = new Blob(["﻿" + [kopf, ...zeilen].join("\r\n")], {
-    type: "text/csv;charset=utf-8",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "zuschlag-kalkulation.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  ladeHerunter(
+    "﻿" + [kopf, ...zeilen].join("\r\n"),
+    "text/csv;charset=utf-8",
+    "zuschlag-kalkulation.csv"
+  );
 }

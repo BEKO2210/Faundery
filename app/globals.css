@@ -197,6 +197,42 @@ input.ep.geaendert { border-color: var(--accent); }
 
 .druckkopf { display: none; }
 
+/* ---------- Wiederherstellen-Banner ---------- */
+.restore-banner {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  background: var(--bg-card); border: 1px solid var(--accent);
+  border-radius: 10px; padding: 14px 18px; margin: 0 0 16px;
+  font-size: 14.5px;
+}
+.restore-actions { display: flex; gap: 8px; }
+
+/* ---------- USt-Schalter & Exporthinweis ---------- */
+.ust-wahl select {
+  background: var(--bg-card); border: 1px solid var(--line);
+  color: var(--text); border-radius: 6px; padding: 4px 8px;
+  font-size: 14px; cursor: pointer;
+}
+.ust-wahl select:focus { outline: none; border-color: var(--accent); }
+.zeile.ust-hinweis span:first-child {
+  font-size: 12.5px; color: var(--text-dim); font-style: italic;
+}
+.export-hinweis { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+
+/* ---------- Rechtsseiten & Footer ---------- */
+.rechtsseite { padding: 60px 24px 90px; max-width: 760px; }
+.rechtsseite h1 { font-family: var(--serif); font-size: 32px; margin-bottom: 24px; }
+.rechtsseite h2 { font-family: var(--serif); font-size: 19px; margin: 26px 0 8px; }
+.rechtsseite p { color: var(--text-dim); line-height: 1.65; font-size: 15px; }
+.rechtsseite .stand { margin-top: 30px; font-size: 13px; }
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 20px; flex-wrap: wrap;
+}
+.footer-links { display: flex; gap: 18px; white-space: nowrap; }
+.footer-links a { color: var(--text-dim); text-decoration: none; }
+.footer-links a:hover { color: var(--accent); }
+
 table.lv {
   width: 100%; border-collapse: collapse; font-size: 14px;
   background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px;

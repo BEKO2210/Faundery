@@ -13,6 +13,17 @@ export interface ParsedLv {
  */
 export function parseLvDatei(dateiname: string, inhalt: string): ParsedLv {
   const name = dateiname.toLowerCase();
+  const kopf = inhalt.slice(0, 8);
+  if (kopf.startsWith("%PDF")) {
+    throw new Error(
+      "Das ist eine PDF-Datei. Bitte laden Sie das Leistungsverzeichnis als GAEB-Datei (.x83) aus dem Vergabeportal herunter — dort meist unter „Vergabeunterlagen“ neben dem PDF."
+    );
+  }
+  if (kopf.startsWith("PK")) {
+    throw new Error(
+      "Das sieht nach einer Office- oder ZIP-Datei aus. Bitte laden Sie das Leistungsverzeichnis als GAEB-Datei (.x83) oder als CSV (oz;menge;einheit;text) hoch."
+    );
+  }
   if (name.endsWith(".csv")) return parseCsv(inhalt);
   if (/\.d8\d$/.test(name)) return parseGaeb90(inhalt);
   // GAEB DA XML (auch wenn die Endung nicht stimmt, am Inhalt erkennen)
