@@ -124,13 +124,78 @@ a:hover { text-decoration: underline; }
 }
 
 .ergebnis-kopf {
-  display: flex; justify-content: space-between; align-items: flex-end;
+  display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 16px; margin: 36px 0 16px;
 }
 .ergebnis-kopf h2 { font-family: var(--serif); font-size: 24px; margin: 0; }
-.ergebnis-kopf .engine-badge {
-  font-size: 13px; color: var(--text-dim);
+.engine-badge { font-size: 13px; color: var(--text-dim); white-space: nowrap; }
+.btn-klein { padding: 8px 16px; font-size: 14px; }
+
+/* ---------- Ladezustand ---------- */
+.lade-card {
+  display: flex; gap: 18px; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 28px 32px; margin: 8px 0;
 }
+.lade-card p { margin: 4px 0 0; color: var(--text-dim); font-size: 14px; }
+.spinner {
+  width: 28px; height: 28px; flex: none;
+  border: 3px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: drehen 0.8s linear infinite;
+}
+@keyframes drehen { to { transform: rotate(360deg); } }
+.upload-icon { font-size: 34px; color: var(--accent); }
+
+/* ---------- Statistik-Karten ---------- */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px; margin: 0 0 18px;
+}
+.stat {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-wert {
+  font-family: var(--serif); font-size: 24px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.stat-wert.ok { color: var(--ok); }
+.stat-wert.bad { color: var(--bad); }
+.stat-label {
+  font-size: 12px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ---------- Werkzeugleiste ---------- */
+.werkzeugleiste {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  background: var(--bg-card); border: 1px solid var(--line);
+  color: var(--text-dim); border-radius: 999px;
+  padding: 6px 14px; font-size: 13.5px; cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.chip:hover { border-color: var(--accent); }
+.chip.aktiv { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+input.suche {
+  flex: 1; min-width: 180px; max-width: 320px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 8px 14px; font-size: 14px;
+}
+input.suche:focus { outline: none; border-color: var(--accent); }
+
+.tabelle-wrap { overflow-x: auto; }
+table.lv thead th { position: sticky; top: 0; }
+tr.zeile-pruefen td { background: rgba(224, 108, 95, 0.05); }
+td.leer { text-align: center; color: var(--text-dim); padding: 28px; }
+td.gp { font-weight: 600; }
+input.ep.geaendert { border-color: var(--accent); }
+
+.druckkopf { display: none; }
 
 table.lv {
   width: 100%; border-collapse: collapse; font-size: 14px;
@@ -188,9 +253,41 @@ footer.site {
   color: var(--text-dim); font-size: 13.5px;
 }
 
+/* ---------- Pricing (Landing) ---------- */
+.preise { padding: 0 0 90px; }
+.preis-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+.preis-card {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 28px; display: flex; flex-direction: column;
+}
+.preis-card.hervor { border-color: var(--accent); }
+.preis-card h3 { font-family: var(--serif); font-size: 20px; margin: 0 0 4px; }
+.preis-card .preis {
+  font-family: var(--serif); font-size: 34px; color: var(--accent);
+  margin: 8px 0 2px;
+}
+.preis-card .preis small { font-size: 15px; color: var(--text-dim); font-family: var(--sans); }
+.preis-card ul { margin: 14px 0 22px; padding-left: 18px; color: var(--text-dim); font-size: 14.5px; }
+.preis-card ul li { margin-bottom: 6px; }
+.preis-card .btn { margin-top: auto; text-align: center; }
+.preis-tag {
+  display: inline-block; align-self: flex-start; font-size: 11.5px; font-weight: 700;
+  background: var(--accent); color: #1a1208; border-radius: 999px;
+  padding: 2px 10px; text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
 @media print {
   body { background: #fff; color: #111; }
-  .topbar, .upload-card, .export-row, .hinweis, footer.site, .status { display: none !important; }
+  .topbar, .upload-card, .export-row, .hinweis, footer.site, .status,
+  .werkzeugleiste, .stat-grid, .ergebnis-kopf, .lade-card { display: none !important; }
+  .druckkopf { display: block; margin-bottom: 18px; }
+  .druckkopf h2 { font-family: var(--serif); font-size: 22px; margin: 0 0 4px; }
+  .druckkopf p { margin: 0; color: #555; font-size: 13px; }
+  td.text-cell .quelle { display: none; }
   table.lv, .summen { background: #fff; border-color: #ccc; color: #111; }
   table.lv th { background: #f2f2f2; color: #333; }
   table.lv td { border-color: #ddd; }
