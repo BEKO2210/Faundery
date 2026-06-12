@@ -50,6 +50,43 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="container preise">
+        <h2 className="section-title">Preise</h2>
+        <div className="preis-grid">
+          <div className="preis-card">
+            <h3>Einzel-LV</h3>
+            <div className="preis">149 €<small> / LV</small></div>
+            <ul>
+              <li>Ein komplettes Leistungsverzeichnis kalkuliert</li>
+              <li>Kein Abo, keine Bindung</li>
+              <li>Geld zurück, wenn die Kalkulation nichts taugt</li>
+            </ul>
+            <Link href="/kalkulation" className="btn btn-ghost">Einzeln kalkulieren</Link>
+          </div>
+          <div className="preis-card hervor">
+            <span className="preis-tag">Beliebt</span>
+            <h3>Betrieb</h3>
+            <div className="preis">299 €<small> / Monat</small></div>
+            <ul>
+              <li>5 Leistungsverzeichnisse pro Monat</li>
+              <li>Ausschreibungs-Feed für Ihr Gewerk und Ihre Region</li>
+              <li>CSV-Export &amp; druckfertige Angebote</li>
+            </ul>
+            <Link href="/kalkulation" className="btn btn-primary">14 Tage testen</Link>
+          </div>
+          <div className="preis-card">
+            <h3>Profi</h3>
+            <div className="preis">599 €<small> / Monat</small></div>
+            <ul>
+              <li>Unbegrenzte Leistungsverzeichnisse</li>
+              <li>Win/Loss-Auswertung Ihrer Angebote</li>
+              <li>Regionale Preisbenchmarks</li>
+            </ul>
+            <Link href="/kalkulation" className="btn btn-ghost">Anfragen</Link>
+          </div>
+        </div>
+      </section>
+
       <section className="container steps">
         <h2>So funktioniert&rsquo;s</h2>
         <div className="step-row">
