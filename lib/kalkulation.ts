@@ -23,7 +23,7 @@ export async function kalkuliere(
     }
   } else {
     hinweise.push(
-      "Demo-Modus: Kalkulation über den Referenzpreis-Katalog. Mit gesetztem ANTHROPIC_API_KEY kalkuliert die KI jede Position individuell."
+      "Demo-Modus: Die Preise stammen aus dem Referenzkatalog für Maler- und Trockenbauleistungen. Bitte vor Abgabe alle Positionen prüfen."
     );
   }
 

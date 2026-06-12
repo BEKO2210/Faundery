@@ -28,10 +28,16 @@ export default function RootLayout({
         </header>
         {children}
         <footer className="site">
-          <div className="container">
-            Zuschlag — Kalkulationsvorschläge sind Richtwerte; die Freigabe der
-            Preise liegt beim Betrieb. Keine Gewähr für Vollständigkeit oder
-            Auskömmlichkeit.
+          <div className="container footer-inner">
+            <span>
+              Zuschlag — Kalkulationsvorschläge sind Richtwerte; die Freigabe der
+              Preise liegt beim Betrieb. Keine Gewähr für Vollständigkeit oder
+              Auskömmlichkeit.
+            </span>
+            <nav className="footer-links">
+              <Link href="/impressum">Impressum</Link>
+              <Link href="/datenschutz">Datenschutz</Link>
+            </nav>
           </div>
         </footer>
       </body>
